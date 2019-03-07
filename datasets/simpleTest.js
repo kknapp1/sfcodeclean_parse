@@ -1,0 +1,1 @@
+{"classes": [{"ApexClassId":"01p4100000MFexiAAD","Name":"ClassA", "ReferencedBy":{"classes":{"ClassB":[]}}},{"ApexClassId":"01p4100000MFexjAAD","Name":"ClassB", "ReferencedBy":{"classes":{"ClassA":[]}}}]}
