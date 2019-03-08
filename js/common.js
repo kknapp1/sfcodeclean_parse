@@ -1,4 +1,3 @@
-$(function () {
     var maxNodes = 10;
     //var maxEdges = 10;
 
@@ -13,16 +12,15 @@ $(function () {
     mapIdToElement = {};
 
     function parseNodesAndEdges(fileName){
-
         $.ajax({
             url:fileName, 
             dataType : 'json',
             async : false, // helpful if this is async so we can use the results of it asap
             success : function(data) { 
-                console.log(data);
+                //console.log(data);
 
                 // First Pass, create nodes but also the hashtable of class names to apexId's
-                for (let index = 0; index < Math.min(maxNodes, data.classes.length); index++) {
+                for (let index = 0; (index < data.classes.length) && (nodes.length < maxNodes); index++) {
                     const element = data.classes[index];
     
                     //filter nodes
@@ -30,7 +28,11 @@ $(function () {
                     //     console.log(element.Name + ' ' + element.ApexClassId);
                     //     AddNode(element);
                     // }
-                    if (!element.Name.endsWith("Test")) {
+
+                    // Filter No test classes and no nodes that don't have other references. (for now)
+                    if (!element.Name.startsWith("fflib") 
+                        && !element.Name.endsWith("Test") 
+                        && Object.keys(element.ReferencedBy.classes).length > 0) {
                         //console.log(element.Name + ' ' + element.ApexClassId);
                         AddNode(element);
                         mapNameToElement[element.Name] = element;
@@ -43,7 +45,8 @@ $(function () {
                 for (var el in mapIdToElement) {
                     const element = mapIdToElement[el];                   
                     for (var key in element.ReferencedBy.classes) {
-                        AddEdge(mapNameToElement[key].ApexClassId, element.ApexClassId);                        
+                        if(key in mapNameToElement) // don't add edges to nodes that aren't here
+                            AddEdge(mapNameToElement[key].ApexClassId, element.ApexClassId);                        
                     }
                 }
             }
@@ -61,14 +64,18 @@ $(function () {
         edges.add({ from: fromClass, to: toClass, arrows: 'to' });
     }
 
-    function CyclesToHTMLString(cyc){
+    // self-referencing classes are returned as cycles. set param to true to hide those
+    function CyclesToHTMLString(cyc, hideSelfReference){
         retval = "";
         for (let index = 0; index < cyc.length; index++) {
-            for (let j = 0; j < cyc[index].length; j++){
-                retval += mapIdToElement[cyc[index][j]].Name;
-                retval += ",";
+            if (!hideSelfReference || cyc[index].length > 1){
+                retval += "<div class='cycle' index=" + index + ">";
+                for (let j = 0; j < cyc[index].length; j++){
+                    retval += mapIdToElement[cyc[index][j]].Name;
+                    retval += ",";
+                }
+                retval += "</div>";
             }
-            retval += "<br/>";
         }
         return retval;
     }
@@ -88,43 +95,52 @@ $(function () {
 
         console.log("Cycles:");
         console.log(graphlib.alg.findCycles(g));    
-        $('#numCycles').html(CyclesToHTMLString(graphlib.alg.findCycles(g)));
+        $('#numCycles').html(CyclesToHTMLString(graphlib.alg.findCycles(g), true));
                                          
     }    
 
+    function displayNetwork() {
+        // create a network
+        var container = document.getElementById('mynetwork');
+
+        // provide the data in the vis format
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {
+            layout: {
+                improvedLayout: true
+            },
+            physics: {
+                enabled: true,
+                solver: 'barnesHut',
+                stabilization: {
+                    enabled: true,
+                    iterations: 10,
+                    updateInterval: 100,
+                    onlyDynamicEdges: false,
+                    fit: true
+                }
+            }
+        };
+        // initialize your network!
+        var network = new vis.Network(container, data, options);
+    }
+
+$(function() {
     //parseNodesAndEdges("datasets/SF Code Scan -INT.js");
     parseNodesAndEdges("datasets/simpleTest.js");
+    //parseNodesAndEdges("datasets/sfcodeclean-kknapp.json");
     $('#numNodes').text(nodes.length);
     $('#numEdges').text(edges.length);
 
-    // create a network
-    var container = document.getElementById('mynetwork');
-
-    // provide the data in the vis format
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
-    var options = {
-        layout: {
-            improvedLayout: true
-        },
-        physics: {
-            enabled: true,
-            solver: 'barnesHut',
-            stabilization: {
-                enabled: true,
-                iterations: 10,
-                updateInterval: 100,
-                onlyDynamicEdges: false,
-                fit: true
-            }
-        }
-    };
-
-    // initialize your network!
-    var network = new vis.Network(container, data, options);
 
     evalGraph(data);
+
+    $( ".cycle" ).click(function() {
+        //$( this ).slideUp();
+        displayNetwork();
+    });
 
 });
