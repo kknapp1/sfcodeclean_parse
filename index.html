@@ -20,6 +20,10 @@
             height: 400px;*/
             border: 1px solid lightgray;
         }
+        .cycle:hover {
+                background: yellow;
+                cursor: pointer;
+              }
     </style>
 
 <div id="stats">
@@ -35,7 +39,9 @@
     </div>
 
 <script>
-
+    $( ".cycle" ).click(function() {
+        $( this ).slideUp();
+      });
 </script>
 </body>
 
