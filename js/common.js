@@ -1,4 +1,7 @@
-    var maxNodes = 10;
+    
+    var fileData;
+    
+    var maxNodes = 100;
     //var maxEdges = 10;
 
     // create an array with nodes
@@ -11,47 +14,53 @@
     var mapNameToElement = {};
     mapIdToElement = {};
 
-    function parseNodesAndEdges(fileName){
+    function initFileData(fileName){
         $.ajax({
             url:fileName, 
             dataType : 'json',
             async : false, // helpful if this is async so we can use the results of it asap
             success : function(data) { 
-                //console.log(data);
-
-                // First Pass, create nodes but also the hashtable of class names to apexId's
-                for (let index = 0; (index < data.classes.length) && (nodes.length < maxNodes); index++) {
-                    const element = data.classes[index];
-    
-                    //filter nodes
-                    // if (element.Name.match(/^Account*/)) {
-                    //     console.log(element.Name + ' ' + element.ApexClassId);
-                    //     AddNode(element);
-                    // }
-
-                    // Filter No test classes and no nodes that don't have other references. (for now)
-                    if (!element.Name.startsWith("fflib") 
-                        && !element.Name.endsWith("Test") 
-                        && Object.keys(element.ReferencedBy.classes).length > 0) {
-                        //console.log(element.Name + ' ' + element.ApexClassId);
-                        AddNode(element);
-                        mapNameToElement[element.Name] = element;
-                        mapIdToElement[element.ApexClassId] = element;   
-                    }
-                    //AddNode(element); // no filter.
-                }
-    
-                // Second Pass. Create Edges b/c hopefully, all the classes are there.
-                for (var el in mapIdToElement) {
-                    const element = mapIdToElement[el];                   
-                    for (var key in element.ReferencedBy.classes) {
-                        if(key in mapNameToElement) // don't add edges to nodes that aren't here
-                            AddEdge(mapNameToElement[key].ApexClassId, element.ApexClassId);                        
-                    }
-                }
+                fileData = data;
             }
-            });
+        });
+    }
 
+    // Parses the given elements and build global nodes and edges vars
+    // This is useful because not all edges in the element data should be evaluated nor rendered
+    // b/c they may include nodes that aren't included
+    function parseNodesAndEdges(elementData){
+        //console.log(data);
+
+        // First Pass, create nodes but also the hashtable of class names to apexId's
+        for (let index = 0; (index < elementData.classes.length) && (nodes.length < maxNodes); index++) {
+            const element = elementData.classes[index];
+
+            //filter nodes
+            // if (element.Name.match(/^Account*/)) {
+            //     console.log(element.Name + ' ' + element.ApexClassId);
+            //     AddNode(element);
+            // }
+
+            // Filter No test classes and no nodes that don't have other references. (for now)
+            if (!element.Name.startsWith("fflib") 
+                && !element.Name.endsWith("Test") 
+                && Object.keys(element.ReferencedBy.classes).length > 0) {
+                //console.log(element.Name + ' ' + element.ApexClassId);
+                AddNode(element);
+                mapNameToElement[element.Name] = element;
+                mapIdToElement[element.ApexClassId] = element;   
+            }
+            //AddNode(element); // no filter.
+        }
+
+        // Second Pass. Create Edges b/c hopefully, all the classes are there.
+        for (var el in mapIdToElement) {
+            const element = mapIdToElement[el];                   
+            for (var key in element.ReferencedBy.classes) {
+                if(key in mapNameToElement) // don't add edges to nodes that aren't here
+                    AddEdge(mapNameToElement[key].ApexClassId, element.ApexClassId);                        
+            }
+        }
     }
 
     function AddNode(codescan_element) {
@@ -80,16 +89,16 @@
         return retval;
     }
 
-    // graph stuff after this
-    function evalGraph(data){
+    // Build a graph and stats from the given nodes and edges
+    function evalGraph(){
 
         var g = new graphlib.Graph();          
         
-        data.nodes.forEach(function(n){
+        nodes.forEach(function(n){
             g.setNode(n.id, n.label);
         });
 
-        data.edges.forEach(function(e){
+        edges.forEach(function(e){
             g.setEdge(e.from, e.to);
         });
 
@@ -129,18 +138,19 @@
     }
 
 $(function() {
-    //parseNodesAndEdges("datasets/SF Code Scan -INT.js");
-    parseNodesAndEdges("datasets/simpleTest.js");
-    //parseNodesAndEdges("datasets/sfcodeclean-kknapp.json");
+    //initFileData("datasets/SF Code Scan -INT.js");
+    initFileData("datasets/simpleTest.js");
+    //initFileData("datasets/sfcodeclean-kknapp.json");
+    parseNodesAndEdges(fileData);
     $('#numNodes').text(nodes.length);
     $('#numEdges').text(edges.length);
 
-
-    evalGraph(data);
+    evalGraph(nodes,edges);
 
     $( ".cycle" ).click(function() {
-        //$( this ).slideUp();
         displayNetwork();
+        $( "#tabs" ).tabs( "option", "active", 1 );
     });
+
 
 });
