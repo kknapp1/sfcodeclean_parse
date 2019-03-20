@@ -109,3 +109,12 @@ function evalGraph(){
                                         
     return g;
 }  
+
+function AddNodeAndParents(element){
+    var retval = [];
+    retval.push(element);
+    for (var child in element.ReferencedBy.classes) {
+        retval.push(AddNodeAndParents(mapNameToElement[child]));                   
+    }
+    return retval;
+}
