@@ -22,7 +22,9 @@
    
     <!-- DataTables for the grid of Classes -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>
-    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/sl-1.3.0/datatables.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.3.0/css/select.dataTables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/select/1.3.0/js/dataTables.select.min.js"></script>
    
 </head>
 
@@ -53,7 +55,18 @@
     <div id="tabs-1">
         <button id="evalNodes" style="outline: rgba(0, 0, 255, 0.3) solid 1px;">Evaluate Nodes</button>
         <button id="showGraph" disabled style="outline: rgba(0, 0, 255, 0.3) solid 1px;">Display Graph</button>
-        <table id="classTable"></table>
+        <table id="classTable">
+            <thead></thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <th></th>
+                    <th> </th>
+                    <th> </th>
+                    <th> </th>
+                </tr>
+            </tfoot>
+        </table>
     </div>
     <div id="tabs-2">
         <div id="mynetwork">
