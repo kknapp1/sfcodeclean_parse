@@ -62,11 +62,11 @@ $( function() {
             $('#showGraph').removeAttr('disabled');
         }
     } );
-    $('#deepEval').click( function () {
+    $('#evalChildren').click( function () {
         //alert( table.rows('.selected').data().length +' row(s) selected' );
         console.log(table.rows('.selected').data());
         if (table.rows('.selected').data().length > 0){
-            deepEval(table.rows('.selected').data());            
+            evalChildren(table.rows('.selected').data());            
             $('#numNodes').text(nodes.length);
             $('#numEdges').text(edges.length);
             gGraph = evalGraph(nodes,edges);

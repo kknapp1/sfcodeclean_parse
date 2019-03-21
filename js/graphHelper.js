@@ -1,7 +1,7 @@
 // Parses the given elements and build global nodes and edges vars
 // This is useful because not all edges in the element data should be evaluated nor rendered
 // b/c they may include nodes that aren't included
-function parseNodesAndEdges(elementData){
+function parseNodesAndEdges(elementData, bFilterCommonNodes){
     //console.log(data);
     resetNodedata();
 
@@ -9,25 +9,24 @@ function parseNodesAndEdges(elementData){
     for (let index = 0; (index < elementData.length) ; index++) {
         const element = elementData[index];
 
-        //filter nodes
-        // if (element.Name.match(/^Account*/)) {
-        //     console.log(element.Name + ' ' + element.ApexClassId);
-        //     AddNode(element);
-        // }
-
-        // Filter No test classes and no nodes that don't have other references. (for now)
-        // if (!element.Name.startsWith("fflib") 
-        //     && !element.Name.endsWith("Test") 
-        //     && Object.keys(element.ReferencedBy.classes).length > 0) {
-        //     //console.log(element.Name + ' ' + element.ApexClassId);
-        //     AddNode(element);
-        //     mapNameToElement[element.Name] = element;
-        //     mapIdToElement[element.ApexClassId] = element;   
-        // }
-        AddNode(element);
-        mapNameToElement[element.Name] = element;
-        mapIdToElement[element.ApexClassId] = element;   
-}
+        if(bFilterCommonNodes){
+            //Filter No test classes and no nodes that don't have other references. (for now)
+            if (!element.Name.startsWith("fflib") 
+                && !element.Name.endsWith("Test") 
+                && element.Name != "RP_checkRecursive"
+                && Object.keys(element.ReferencedBy.classes).length > 0) {
+                //console.log(element.Name + ' ' + element.ApexClassId);
+                AddNode(element);
+                mapNameToElement[element.Name] = element;
+                mapIdToElement[element.ApexClassId] = element;   
+            }
+        }
+        else{
+            AddNode(element);
+            mapNameToElement[element.Name] = element;
+            mapIdToElement[element.ApexClassId] = element;   
+        }
+    }
 
     // Second Pass. Create Edges b/c hopefully, all the classes are there.
     for (var el in mapIdToElement) {
@@ -123,13 +122,18 @@ function AddNodeAndParents(element){
 }
 
 var flatPath = new vis.DataSet();
-function deepEval(elementData){
-    parseNodesAndEdges(fileData.classes); //setup all the datasets by parsing the full list of classes
+var possibleCycle = new vis.DataSet();
+function evalChildren(elementData){
+    parseNodesAndEdges(fileData.classes, true); //setup all the datasets by parsing the full list of classes
 
     // now, figure out just the parent(s) that we need
     for (let index = 0; (index < elementData.length); index++) {
         const element = elementData[index];
+        possibleCycle.add(element); // push the parent just to save it
         AddNodeAndChildren(element);
+        console.log('possible cycle');
+        console.log(possibleCycle);
+        possibleCycle.clear();
     }
 
     // And rebuild the graph
@@ -137,7 +141,7 @@ function deepEval(elementData){
     flatPath.forEach(function (item) {
         arrParents.push(item);
     });
-    parseNodesAndEdges(arrParents);
+    parseNodesAndEdges(arrParents, true);
 }
 
 function AddNodeAndChildren(element){
@@ -146,6 +150,8 @@ function AddNodeAndChildren(element){
 
     // if the dataset already contain it, then we're done
     if(DataSetContains(flatPath,element)){
+        if(!DataSetContains(possibleCycle,element)) // check for self-reference
+            possibleCycle.add(element);
         return;
     }
     

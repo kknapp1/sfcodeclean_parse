@@ -40,7 +40,7 @@
         var options = {
             layout: {
                 improvedLayout: true,
-                hierarchical: true
+                hierarchical: false
             },
             physics: {
                 enabled: false,
@@ -60,7 +60,6 @@
     }
 
 $(function() {
-    //initFileData("datasets/SF Code Scan -INT.js");
     //initFileData("datasets/simpleTest.js");
     //initFileData("datasets/simpleNoCycle.js");
     initFileData("datasets/sfcodeclean-kknapp.js");
