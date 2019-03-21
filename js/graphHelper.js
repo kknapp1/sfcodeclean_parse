@@ -6,7 +6,7 @@ function parseNodesAndEdges(elementData){
     resetNodedata();
 
     // First Pass, create nodes but also the hashtable of class names to apexId's
-    for (let index = 0; (index < elementData.length) && (nodes.length < maxNodes); index++) {
+    for (let index = 0; (index < elementData.length) ; index++) {
         const element = elementData[index];
 
         //filter nodes
@@ -127,7 +127,7 @@ function deepEval(elementData){
     parseNodesAndEdges(fileData.classes); //setup all the datasets by parsing the full list of classes
 
     // now, figure out just the parent(s) that we need
-    for (let index = 0; (index < elementData.length) && (nodes.length < maxNodes); index++) {
+    for (let index = 0; (index < elementData.length); index++) {
         const element = elementData[index];
         AddNodeAndChildren(element);
     }
@@ -172,4 +172,9 @@ function DataSetContains(ds, el){
           return (item.ApexClassId == el.ApexClassId);
         }
       }).length > 0;
+}
+
+function massiveStatisticalEval(){
+    // loop through each node and do a deep eval 1 at a time.
+    // find and report cycles as you go
 }
