@@ -60,8 +60,8 @@
 
 $(function() {
     //initFileData("datasets/SF Code Scan -INT.js");
-    //initFileData("datasets/simpleTest.js");
-    initFileData("datasets/simpleNoCycle.js");
+    initFileData("datasets/simpleTest.js");
+    //initFileData("datasets/simpleNoCycle.js");
     //initFileData("datasets/sfcodeclean-kknapp.js");
 
     $( "#showGraph" ).click(function() {

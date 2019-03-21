@@ -42,6 +42,9 @@ function parseNodesAndEdges(elementData){
 function resetNodedata(){
     nodes.clear();
     edges.clear();
+    flatPath.clear();
+    mapNameToElement = [];
+    mapIdToElement = [];
 }
 
 function AddNode(codescan_element) {
@@ -117,4 +120,56 @@ function AddNodeAndParents(element){
         retval.push(AddNodeAndParents(mapNameToElement[child]));                   
     }
     return retval;
+}
+
+var flatPath = new vis.DataSet();
+function deepEval(elementData){
+    parseNodesAndEdges(fileData.classes); //setup all the datasets by parsing the full list of classes
+
+    // now, figure out just the parent(s) that we need
+    for (let index = 0; (index < elementData.length) && (nodes.length < maxNodes); index++) {
+        const element = elementData[index];
+        AddNodeAndChildren(element);
+    }
+
+    // And rebuild the graph
+    var arrParents = [];
+    flatPath.forEach(function (item) {
+        arrParents.push(item);
+    });
+    parseNodesAndEdges(arrParents);
+}
+
+function AddNodeAndChildren(element){
+    if (element == undefined)
+        return;
+
+    // if the dataset already contain it, then we're done
+    if(DataSetContains(flatPath,element)){
+        return;
+    }
+    
+    // Otherwise, add the element and its children
+    flatPath.add(element);    
+
+    // find all the edges that are from this node
+    // the 'to' id's are the children
+    var children = edges.get({
+        filter: function (item) {
+          return (item.from == element.ApexClassId);
+        }
+      });
+
+    for (let index = 0; index < children.length; index++) {
+        AddNodeAndChildren(mapIdToElement[children[index].to]);              
+    }
+    return;
+}
+
+function DataSetContains(ds, el){
+    return ds.get({
+        filter: function (item) {
+          return (item.ApexClassId == el.ApexClassId);
+        }
+      }).length > 0;
 }
