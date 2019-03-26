@@ -13,8 +13,9 @@ function parseNodesAndEdges(elementData, bFilterCommonNodes){
             //Filter No test classes and no nodes that don't have other references. (for now)
             if (!element.Name.startsWith("fflib") 
                 && !element.Name.endsWith("Test") 
-                && element.Name != "RP_checkRecursive"
-                && Object.keys(element.ReferencedBy.classes).length > 0) {
+                && element.Name != "RP_checkRecursive" ){
+                //&& Object.keys(element.ReferencedBy.classes).length > 0){}
+                
                 //console.log(element.Name + ' ' + element.ApexClassId);
                 AddNode(element);
                 mapNameToElement[element.Name] = element;
@@ -129,11 +130,7 @@ function evalChildren(elementData){
     // now, figure out just the parent(s) that we need
     for (let index = 0; (index < elementData.length); index++) {
         const element = elementData[index];
-        possibleCycle.add(element); // push the parent just to save it
         AddNodeAndChildren(element);
-        console.log('possible cycle');
-        console.log(possibleCycle);
-        possibleCycle.clear();
     }
 
     // And rebuild the graph
@@ -150,8 +147,6 @@ function AddNodeAndChildren(element){
 
     // if the dataset already contain it, then we're done
     if(DataSetContains(flatPath,element)){
-        if(!DataSetContains(possibleCycle,element)) // check for self-reference
-            possibleCycle.add(element);
         return;
     }
     
@@ -180,7 +175,3 @@ function DataSetContains(ds, el){
       }).length > 0;
 }
 
-function massiveStatisticalEval(){
-    // loop through each node and do a deep eval 1 at a time.
-    // find and report cycles as you go
-}
