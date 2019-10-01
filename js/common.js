@@ -62,7 +62,8 @@
 $(function() {
     //initFileData("datasets/simpleTest.js");
     //initFileData("datasets/simpleNoCycle.js");
-    initFileData("datasets/sfcodeclean-kknapp.js");
+    //initFileData("datasets/sfcodeclean-kknapp.js");
+    initFileData("datasets/rpv2.js");
 
     $( "#showGraph" ).click(function() {
         displayNetwork();        

@@ -73,6 +73,14 @@ $( function() {
             $('#showGraph').removeAttr('disabled');
         }
     } );
+    $('#exportToCSV').click( function () {
+        console.log(table.rows('.selected').data());
+        if (table.rows('.selected').data().length > 0){
+            parseNodesAndEdges(table.rows('.selected').data());
+            exportDataAsCSV();
+            $('#showGraph').removeAttr('disabled');
+        }
+    } );
 
     // end DataTables stuff    
 } );    

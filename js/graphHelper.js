@@ -31,11 +31,12 @@ function parseNodesAndEdges(elementData, bFilterCommonNodes){
 
     // Second Pass. Create Edges b/c hopefully, all the classes are there.
     for (var el in mapIdToElement) {
-        const element = mapIdToElement[el];                   
-        for (var key in element.ReferencedBy.classes) {
-            if(key in mapNameToElement) // don't add edges to nodes that aren't here
-                AddEdge(mapNameToElement[key].ApexClassId, element.ApexClassId);                        
-        }
+        const element = mapIdToElement[el];  
+        if(element.ReferencedBy != undefined)                 
+            for (var key in element.ReferencedBy.classes) {
+                if(key in mapNameToElement) // don't add edges to nodes that aren't here
+                    AddEdge(mapNameToElement[key].ApexClassId, element.ApexClassId);                        
+            }
     }
 }
 
@@ -86,6 +87,26 @@ function CyclesToHTMLString(cyc, hideSelfReference){
         }
     }
     return retval;
+}
+
+// basically the same as building a graph, just changing the output format
+function exportDataAsCSV(){
+    var nodeCSV;
+    nodeCSV = "Id;Label\n";
+    
+    nodes.forEach(function(n){
+        nodeCSV += n.id + ";" + n.label + "\n";
+    });
+
+    var edgeCSV;       
+    edgeCSV = "Source;Target\n"
+    edges.forEach(function(e){
+        edgeCSV += e.from + ";" + e.to + "\n";
+    });
+
+    // just output to the console for now, save as txt later
+    console.log(nodeCSV);
+    console.log(edgeCSV);    
 }
 
 // Build a graph and stats from the given nodes and edges
