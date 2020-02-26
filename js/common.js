@@ -17,6 +17,19 @@
     // global reference to the graph after it's been generated
     var gGraph;
 
+    $(function() {
+        //initFileData("datasets/simpleTest.js");
+        //initFileData("datasets/simpleNoCycle.js");
+        //initFileData("datasets/sfcodeclean-kknapp.js");
+        initFileData("datasets/RPv2DeployClasses.js");
+    
+        $( "#showGraph" ).click(function() {
+            displayNetwork();        
+        });
+    
+    
+    });
+    
     function initFileData(fileName){
         $.ajax({
             url:fileName, 
@@ -59,15 +72,23 @@
         $( "#tabs" ).tabs( "option", "active", 1 );
     }
 
-$(function() {
-    //initFileData("datasets/simpleTest.js");
-    //initFileData("datasets/simpleNoCycle.js");
-    //initFileData("datasets/sfcodeclean-kknapp.js");
-    initFileData("datasets/rpv2.js");
-
-    $( "#showGraph" ).click(function() {
-        displayNetwork();        
-    });
 
 
-});
+// Function to download data to a file
+function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}

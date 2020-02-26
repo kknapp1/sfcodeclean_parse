@@ -55,7 +55,7 @@ $( function() {
         //alert( table.rows('.selected').data().length +' row(s) selected' );
         console.log(table.rows('.selected').data());
         if (table.rows('.selected').data().length > 0){
-            parseNodesAndEdges(table.rows('.selected').data());
+            parseNodesAndEdges(table.rows('.selected').data(),false,$('#includeReferenceNodes').prop("checked"));
             $('#numNodes').text(nodes.length);
             $('#numEdges').text(edges.length);
             gGraph = evalGraph(nodes,edges);
@@ -76,8 +76,16 @@ $( function() {
     $('#exportToCSV').click( function () {
         console.log(table.rows('.selected').data());
         if (table.rows('.selected').data().length > 0){
-            parseNodesAndEdges(table.rows('.selected').data());
+            parseNodesAndEdges(table.rows('.selected').data(),false,$('#includeReferenceNodes').prop("checked"));
             exportDataAsCSV();
+            $('#showGraph').removeAttr('disabled');
+        }
+    } );
+    $('#exportToDOT').click( function () {
+        console.log(table.rows('.selected').data());
+        if (table.rows('.selected').data().length > 0){
+            parseNodesAndEdges(table.rows('.selected').data(),false,$('#includeReferenceNodes').prop("checked"));
+            exportDataAsDOT();
             $('#showGraph').removeAttr('disabled');
         }
     } );

@@ -1,9 +1,11 @@
 // Parses the given elements and build global nodes and edges vars
 // This is useful because not all edges in the element data should be evaluated nor rendered
 // b/c they may include nodes that aren't included
-function parseNodesAndEdges(elementData, bFilterCommonNodes){
+function parseNodesAndEdges(elementData, bFilterCommonNodes, bAddReferenceNodes, bResetNodeData){
     //console.log(data);
-    resetNodedata();
+    //console.log("Include reference nodes? " + bAddReferenceNodes);
+    if(bResetNodeData == undefined || bResetNodeData == true)
+        resetNodedata();
 
     // First Pass, create nodes but also the hashtable of class names to apexId's
     for (let index = 0; (index < elementData.length) ; index++) {
@@ -17,15 +19,34 @@ function parseNodesAndEdges(elementData, bFilterCommonNodes){
                 //&& Object.keys(element.ReferencedBy.classes).length > 0){}
                 
                 //console.log(element.Name + ' ' + element.ApexClassId);
+                if(!(element.Name in mapNameToElement)){ //only add if not in the array already
+                    AddNode(element);
+                    mapNameToElement[element.Name] = element;
+                    mapIdToElement[element.ApexClassId] = element;   
+                }
+            }
+        }
+        else{
+            if(!(element.Name in mapNameToElement)){ //only add if not in the array already
                 AddNode(element);
                 mapNameToElement[element.Name] = element;
                 mapIdToElement[element.ApexClassId] = element;   
             }
-        }
-        else{
-            AddNode(element);
-            mapNameToElement[element.Name] = element;
-            mapIdToElement[element.ApexClassId] = element;   
+    }
+
+        if (bAddReferenceNodes){
+            for (var key in element.ReferencedBy.classes) {
+                if(!(key in mapNameToElement)){ //only add if not in the array already
+                    // When we loop through the classes, we only have class names, not proper objects
+                    // so, go find the object element in the original TableData array that matches the name
+                    el = fileData.classes.filter(x => x.Name === key);
+                    if(el[0].Name == key){ // did we fetch the correct thing? or anything?
+                        AddNode(el[0]);
+                        mapNameToElement[el[0].Name] = el[0];
+                        mapIdToElement[el[0].ApexClassId] = el[0];   
+                    }        
+                }
+            }
         }
     }
 
@@ -104,9 +125,23 @@ function exportDataAsCSV(){
         edgeCSV += e.from + ";" + e.to + "\n";
     });
 
-    // just output to the console for now, save as txt later
-    console.log(nodeCSV);
-    console.log(edgeCSV);    
+    // setup file downloads
+    download(nodeCSV,"nodes.csv","text/plain");
+    download(edgeCSV,"edges.csv","text/plain");
+}
+
+// basically the same as building a graph, just changing the output format
+function exportDataAsDOT(){
+    var outFile;
+    outFile = "digraph {\n"; //opening line
+    
+    edges.forEach(function(e){
+        outFile += mapIdToElement[e.from].Name + " -> " + mapIdToElement[e.to].Name + "\n";
+        
+    });
+
+    outFile += "}\n"; //closing line
+    download(outFile,"graph.gv","text/plain");
 }
 
 // Build a graph and stats from the given nodes and edges
